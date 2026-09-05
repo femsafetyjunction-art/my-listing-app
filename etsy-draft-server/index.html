@@ -219,9 +219,6 @@ function ClipartPromptStudio() {
   const [tab, setTab] = useState("dna");
   const [imgMode, setImgMode] = useState("ref");
   const [heroSeed, setHeroSeed] = useState(0);
-  const [serverUrl, setServerUrl] = useState("");
-  const [price, setPrice] = useState("4.99");
-  const [sendState, setSendState] = useState(null); // null | "sending" | {ok, msg, link?}
   const [licenseKey, setLicenseKey] = useState(() => { try { return localStorage.getItem("lvs_license") || ""; } catch { return ""; } });
 
   const style = STYLES.find((s) => s.id === styleId);
@@ -238,74 +235,6 @@ function ClipartPromptStudio() {
   const masterPrompt = result
     ? `Create a cohesive clipart set of ${result.elements.length} individual elements themed "${brief.trim()}". Elements: ${result.elements.join("; ")}. Every element must share the exact same visual identity: ${dnaStr}. Each element is isolated on a plain white background for easy background removal, evenly sized, no text, high resolution. Avoid: ${result.negative}`
     : "";
-
-  const exportText = result
-    ? (() => {
-        const imgs = listingImagePrompts(result, brief.trim(), imgMode, heroSeed);
-        return `=== ETSY CLIPART LISTING SYSTEM: ${brief.trim().toUpperCase()} ===
-You are my Etsy clipart listing assistant. Follow these rules STRICTLY:
-
-RULE 1 — ONE IMAGE PER GENERATION. Never combine multiple items or multiple listing pages into a single picture. Each clipart element is its own separate image. Each listing image (1 to 10) is its own separate 2000x2000 image.
-RULE 2 — WORK IN ORDER. First generate the clipart elements one by one. Then generate listing image 1, then 2, then 3 ... through 10, each as a standalone image. Wait for me to say "next" before moving on.
-RULE 3 — EVERY image must follow the PRODUCT DNA below exactly so the entire set matches perfectly.
-RULE 4 — Clipart elements: isolated on a plain white background, no text, no watermark.
-RULE 5 — Spell all on-image text exactly as written in each prompt.
-
---- PRODUCT DNA (apply to every image) ---
-${dnaStr}
-
---- NEGATIVE PROMPT (avoid in every image) ---
-${result.negative}
-
---- STEP 1: CLIPART ELEMENTS (${result.elements.length} separate images) ---
-${result.elements.map((el, i) => `Element ${i + 1}: ${fullPrompt(el)}`).join("\n\n")}
-
---- STEP 2: LISTING IMAGES (10 separate images, generate 1 → 10 in order, ${imgMode === "ref" ? "reference-image mode: I will attach my finished PNGs where stated" : "text-only mode"}) ---
-${imgs.map((p, i) => `LISTING IMAGE ${i + 1} — ${p.name}${p.attach ? `\n(${p.attach})` : ""}\n${p.text}`).join("\n\n")}
-
---- STEP 3: LISTING COPY ---
-Title: ${result.title}
-
-Description: ${result.description}
-
-Tags: ${result.tags.join(", ")}
-
-=== END OF SYSTEM ===`;
-      })()
-    : "";
-
-  const etsyDescription = result
-    ? `${result.description}
-
-WHAT'S INCLUDED
-• ${result.elements.length} PNG files
-• 300 DPI, transparent background
-• Instant digital download — no physical item shipped
-
-USE
-• Personal and commercial use allowed`
-    : "";
-
-  const sendToEtsy = async () => {
-    setSendState("sending");
-    try {
-      const res = await fetch((serverUrl.trim().replace(/\/+$/, "") || "/api") + "/draft", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: result.title,
-          description: etsyDescription,
-          tags: result.tags,
-          price: parseFloat(price) || 4.99,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Server error");
-      setSendState({ ok: true, msg: "Draft created in your Etsy shop!", link: data.editUrl });
-    } catch (e) {
-      setSendState({ ok: false, msg: `Couldn't send: ${e.message}. Check the server URL and that your server is running.` });
-    }
-  };
 
   const copy = async (key, text) => {
     try {
@@ -648,8 +577,6 @@ USE
               <Tab active={tab === "prompts"} onClick={() => setTab("prompts")}>Cliparts</Tab>
               <Tab active={tab === "images"} onClick={() => setTab("images")}>Images</Tab>
               <Tab active={tab === "listing"} onClick={() => setTab("listing")}>Listing</Tab>
-              <Tab active={tab === "etsy"} onClick={() => setTab("etsy")}>🚀 Etsy</Tab>
-              <Tab active={tab === "export"} onClick={() => setTab("export")}>📦 Export</Tab>
             </div>
 
             {/* DNA & MASTER */}
@@ -794,108 +721,6 @@ USE
               </div>
             )}
 
-            {/* ETSY */}
-            {tab === "etsy" && (
-              <div>
-                <Sticker rotate={-0.5}>
-                  <StickerHead icon="📋" title="Paste into Etsy — works right now" sub="Open Etsy → Add a listing → paste each field. Under a minute, no retyping." />
-                  <div style={{ display: "grid", gap: 10 }}>
-                    <div>
-                      <div style={{ fontSize: 12.5, fontWeight: 700, color: C.inkSoft, marginBottom: 4 }}>Title</div>
-                      <div style={{ fontSize: 13.5, background: C.blush, borderRadius: 10, padding: 10, lineHeight: 1.5 }}>{result.title}</div>
-                      <div style={{ marginTop: 6 }}><SmallBtn onClick={() => copy("etitle", result.title)}>{copiedKey === "etitle" ? "Copied ✓" : "Copy title"}</SmallBtn></div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: 12.5, fontWeight: 700, color: C.inkSoft, marginBottom: 4 }}>Description (with What's Included & license block)</div>
-                      <div style={{ fontSize: 13, background: C.blush, borderRadius: 10, padding: 10, whiteSpace: "pre-wrap", lineHeight: 1.5, maxHeight: 180, overflowY: "auto" }}>{etsyDescription}</div>
-                      <div style={{ marginTop: 6 }}><SmallBtn onClick={() => copy("edesc", etsyDescription)}>{copiedKey === "edesc" ? "Copied ✓" : "Copy description"}</SmallBtn></div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: 12.5, fontWeight: 700, color: C.inkSoft, marginBottom: 4 }}>Tags (paste one by one, or comma list)</div>
-                      <div style={{ fontSize: 13, background: C.blush, borderRadius: 10, padding: 10, lineHeight: 1.5 }}>{result.tags.join(", ")}</div>
-                      <div style={{ marginTop: 6 }}><SmallBtn onClick={() => copy("etags", result.tags.join(", "))}>{copiedKey === "etags" ? "Copied ✓" : "Copy tags"}</SmallBtn></div>
-                    </div>
-                    <div style={{ fontSize: 12.5, color: C.inkSoft, lineHeight: 1.55, background: C.goldSoft, borderRadius: 10, padding: 10 }}>
-                      Etsy form settings: Type <b>Digital</b> · Who made it <b>I did</b> · Quantity <b>999</b> · then upload your 10 listing images and PNG files.
-                    </div>
-                  </div>
-                </Sticker>
-
-                <Sticker rotate={0.5}>
-                  <StickerHead icon="🚀" title="One-tap: Send to Etsy drafts" sub="Creates the draft in your shop automatically — title, description, tags and price filled in. You only add the images and files." />
-                  <div style={{ display: "grid", gap: 10, marginBottom: 10 }}>
-                    <input
-                      style={{ width: "100%", boxSizing: "border-box", padding: "12px 13px", fontSize: 14, fontFamily: "'Nunito Sans', sans-serif", border: `1.5px solid ${C.line}`, borderRadius: 12, background: C.panel }}
-                      value={serverUrl}
-                      placeholder="Server URL (leave empty to use this site\u2019s own server)"
-                      onChange={(e) => setServerUrl(e.target.value)}
-                    />
-                    <input
-                      style={{ width: "100%", boxSizing: "border-box", padding: "12px 13px", fontSize: 14, fontFamily: "'Nunito Sans', sans-serif", border: `1.5px solid ${C.line}`, borderRadius: 12, background: C.panel }}
-                      value={price}
-                      placeholder="Price (USD)"
-                      onChange={(e) => setPrice(e.target.value)}
-                    />
-                  </div>
-                  <button
-                    onClick={sendToEtsy}
-                    disabled={sendState === "sending"}
-                    style={{ width: "100%", padding: "14px", borderRadius: 12, border: "none", fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: 16, color: "#fff", background: `linear-gradient(120deg, ${C.pink}, ${C.pinkDeep})`, opacity: sendState === "sending" ? 0.7 : 1 }}
-                  >
-                    {sendState === "sending" ? "Sending to Etsy…" : "Send to Etsy drafts 🚀"}
-                  </button>
-                  {sendState && sendState !== "sending" && (
-                    <div style={{ marginTop: 10, fontSize: 13.5, fontWeight: 600, color: sendState.ok ? C.green : C.red, lineHeight: 1.5 }}>
-                      {sendState.msg}
-                      {sendState.link && (
-                        <a href={sendState.link} target="_blank" rel="noreferrer" style={{ display: "block", color: C.pinkDeep, marginTop: 4 }}>
-                          Open your draft on Etsy →
-                        </a>
-                      )}
-                    </div>
-                  )}
-                  <div style={{ fontSize: 12, color: C.inkSoft, lineHeight: 1.55, marginTop: 10 }}>
-                    Etsy requires your secret API keys to live on a small secure server — never inside a webpage. This button talks to that server. Once your server is live (free to host on Vercel), paste its URL above and one-tap sending works — for you first, and for your customers after Etsy approves the app for public access.
-                  </div>
-                </Sticker>
-              </div>
-            )}
-
-            {/* EXPORT */}
-            {tab === "export" && (
-              <div>
-                <Sticker rotate={-0.5}>
-                  <StickerHead
-                    icon="📦"
-                    title="Everything in one — ChatGPT-ready"
-                    sub={`The complete system: DNA, negative prompt, all ${result.elements.length} element prompts, all 10 listing image prompts (${imgMode === "ref" ? "reference-image" : "text-only"} mode) and your listing copy — with strict rules that every image is generated SEPARATELY, in order.`}
-                  />
-                  <button
-                    onClick={() => copy("export", exportText)}
-                    style={{
-                      width: "100%",
-                      padding: "14px",
-                      borderRadius: 12,
-                      border: "none",
-                      fontFamily: "'Baloo 2', sans-serif",
-                      fontWeight: 800,
-                      fontSize: 16,
-                      color: "#fff",
-                      background: `linear-gradient(120deg, ${C.pink}, ${C.pinkDeep})`,
-                      marginBottom: 12,
-                    }}
-                  >
-                    {copiedKey === "export" ? "Copied the whole system ✓" : "Copy the whole system ✦"}
-                  </button>
-                  <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, lineHeight: 1.55, color: C.inkSoft, background: C.blush, borderRadius: 10, padding: 12, whiteSpace: "pre-wrap", maxHeight: 420, overflowY: "auto" }}>
-                    {exportText}
-                  </div>
-                </Sticker>
-                <div style={{ fontSize: 12.5, color: C.inkSoft, textAlign: "center", lineHeight: 1.55 }}>
-                  Paste this as the instructions of a custom GPT (or at the start of any chat). It tells the assistant to generate one image at a time — cliparts first, then listing images 1 through 10, each as its own separate picture, never combined.
-                </div>
-              </div>
-            )}
           </div>
         )}
       </main>
