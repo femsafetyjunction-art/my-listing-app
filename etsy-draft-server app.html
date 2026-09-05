@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Etsy Listing Visual System ✦</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<style>html,body{margin:0;padding:0}</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+const { useState } = React;
+
+/* ============================================================
+   ETSY LISTING VISUAL SYSTEM — Clipart Prompt Studio v3
+   Brief in → Product DNA → master + element prompts →
+   10-image listing set (with on-image text) → listing copy →
+   one-click EXPORT of the whole system as a ChatGPT skill.
+   ============================================================ */
+
+const C = {
+  ink: "#241A21",
+  inkSoft: "#4A3B44",
+  blush: "#FBF2F0",
+  panel: "#FFFFFF",
+  pink: "#E84C9C",
+  pinkDeep: "#C42F7B",
+  gold: "#C9A227",
+  goldSoft: "#F2E3B8",
+  line: "#EBD9D6",
+  green: "#2E7D5B",
+  red: "#B3261E",
+};
+
+const STYLES = [
+  { id: "watercolor", name: "Watercolor Whimsy", icon: "🎨", desc: "Soft washes, dreamy edges", seed: "soft watercolor illustration with delicate paint washes, gentle color bleeds and hand-painted texture" },
+  { id: "retro", name: "Retro Groovy", icon: "🌼", desc: "70s waves, warm palette", seed: "retro groovy 1970s illustration style with wavy shapes, warm vintage palette and funky rounded forms" },
+  { id: "kawaii", name: "Kawaii Cute", icon: "🍓", desc: "Big eyes, soft pastels", seed: "kawaii chibi illustration with oversized sparkly eyes, soft pastel colors, rosy cheeks and rounded proportions" },
+  { id: "bold", name: "Bold Cartoon", icon: "💥", desc: "Thick outlines, punchy color", seed: "bold cartoon illustration with thick black outlines, flat vibrant colors and confident simple shapes" },
+  { id: "glam", name: "Glam Fashion", icon: "💄", desc: "Fashion-illustration energy", seed: "glamorous fashion illustration style with elegant linework, luxe details, glossy highlights and chic attitude" },
+  { id: "boho", name: "Boho Line Art", icon: "🌙", desc: "Minimal lines, earthy accents", seed: "minimalist boho line art with clean flowing single-weight lines and subtle earthy accent tones" },
+  { id: "storybook", name: "Vintage Storybook", icon: "📖", desc: "Nostalgic, textured, warm", seed: "vintage storybook illustration with soft textured shading, muted nostalgic palette and classic picture-book charm" },
+  { id: "clay", name: "Cute 3D Clay", icon: "🧸", desc: "Soft 3D, toy-like", seed: "cute 3D clay render style with soft matte surfaces, rounded toy-like forms and gentle studio lighting" },
+];
+
+const SIZES = [8, 12, 16, 20];
+
+const CLIPART_TYPES = [
+  { id: "occupations", name: "Occupations", icon: "👷🏾‍♀️", subs: ["Construction workers", "Mine workers", "Doctors & nurses", "Hospital & care workers", "Teachers", "Truck drivers", "Firefighters", "Police officers", "Chefs & bakers", "Farmers", "Office & business", "Hair & beauty pros"] },
+  { id: "school", name: "School & Kids", icon: "🎒", subs: ["Toddlers at school", "Primary students", "High school students", "Graduation", "Teachers & classroom", "Back to school"] },
+  { id: "characters", name: "Characters & People", icon: "💁🏾‍♀️", subs: ["Women & girls", "Men & boys", "Couples", "Families", "Babies & toddlers", "Grandparents"] },
+  { id: "animals", name: "Animals & Pets", icon: "🐾", subs: ["Dogs", "Cats", "Farm animals", "Safari animals", "Woodland animals", "Sea creatures", "Birds"] },
+  { id: "florals", name: "Florals & Botanicals", icon: "🌸", subs: ["Roses", "Wildflowers", "Greenery & leaves", "Tropical", "Succulents & cacti"] },
+  { id: "food", name: "Food & Sweets", icon: "🧁", subs: ["Cakes & cupcakes", "Coffee & tea", "Fruits", "Fast food", "Candy & treats"] },
+  { id: "fashion", name: "Fashion & Beauty", icon: "👠", subs: ["Handbags & heels", "Makeup", "Nails", "Dresses & outfits", "Jewellery"] },
+  { id: "alphabet", name: "Alphabet & Numbers", icon: "🔤", subs: [] },
+  { id: "frames", name: "Borders & Frames", icon: "🖼️", subs: ["Floral frames", "Gold frames", "Doodle borders", "Washi & tape"] },
+  { id: "objects", name: "Objects & Props", icon: "🎀", subs: ["Balloons & party", "Stationery", "Tools & hardware", "Home decor"] },
+];
+
+const BUNDLE_IDEAS = {
+  occupations: [
+    "Glam women in construction — hard hats & heels",
+    "Nurse life essentials — scrubs, coffee & heartbeats",
+    "Teacher appreciation — apples, books & chalkboards",
+    "Lady truckers — big rigs & pink bandanas",
+    "Mine crew underground — headlamps & high-vis",
+    "Doctor squad — stethoscopes & white coats",
+    "Firefighter heroes — helmets, hoses & courage",
+    "Hair stylist studio — shears, brushes & glam chairs",
+  ],
+  school: [
+    "Toddler first day of school — tiny backpacks & big smiles",
+    "Back to school supplies — crayons, glue & notebooks",
+    "Graduation day kids — caps, gowns & diplomas",
+    "100 days of school celebration",
+    "Classroom reading corner — books & star charts",
+  ],
+  characters: [
+    "Melanin queens self-care day",
+    "Grandma's kitchen love",
+    "Best friends brunch crew",
+    "New baby milestones",
+    "Family game night",
+  ],
+  animals: [
+    "Sassy farm animals in bandanas",
+    "Safari babies — cute lions, zebras & giraffes",
+    "Cozy woodland critters in autumn",
+    "Pampered pups at the spa",
+    "Under-the-sea friends",
+  ],
+  florals: [
+    "Vintage rose garden",
+    "Boho dried flowers & pampas grass",
+    "Tropical hibiscus paradise",
+    "Spring wildflower meadow",
+    "Succulent terrarium collection",
+  ],
+  food: [
+    "Pastel bakery treats — cupcakes & macarons",
+    "Coffee lover's morning ritual",
+    "Juicy summer fruit slices",
+    "Retro diner fast food",
+    "Candy shop sweetness",
+  ],
+  fashion: [
+    "Luxury handbags & red-bottom heels",
+    "Glam makeup vanity",
+    "Nail tech essentials",
+    "Little black dress collection",
+    "Stacked gold jewellery",
+  ],
+  alphabet: [
+    "Floral watercolor alphabet",
+    "Bold rainbow letters & numbers",
+    "Gold glitter monogram set",
+    "Playful animal alphabet",
+  ],
+  frames: [
+    "Golden floral wreaths & frames",
+    "Hand-drawn doodle borders",
+    "Watercolor splash frames",
+    "Vintage ornate gold frames",
+  ],
+  objects: [
+    "Pink party balloons & confetti",
+    "Cute stationery & planner props",
+    "Girly toolbox — pink tools & hardware",
+    "Cozy home decor accents",
+  ],
+};
+
+/* prompt engineering lives server-side in /api/generate */
+
+/* Every listing image inherits the DNA, carries its own on-image
+   text, and is generated as its OWN separate image (1 → 10). */
+const HERO_LAYOUTS = [
+  "Layout: the headline centered in the middle, the elements arranged in a soft arch above and below it, on one solid soft background color from the palette",
+  "Layout: the headline aligned to the left in the upper third, the elements cascading diagonally from top right to bottom left, on a very light subtle gradient background",
+  "Layout: one oversized star element filling the right half, the headline stacked large on the left half, on a plain warm off-white background",
+  "Layout: the headline large across the upper half, the elements in one clean evenly spaced row across the lower half, on one solid pale background color from the palette",
+  "Layout: the elements placed in the four corners, the headline and sub-line centered, on a softly textured paper background",
+  "Layout: the headline across the top, the elements in a relaxed evenly spaced grid beneath, on a minimal very light background",
+];
+
+function listingImagePrompts(result, brief, mode, heroSeed = 0) {
+  const dna = result.dna.join(", ");
+  const all = result.elements;
+  const heroes = all.slice(0, 3).join(", ");
+  const size = "Square 1:1 aspect ratio, 2000 x 2000 pixels, high resolution, no watermark. Clean, minimal, professional layout like a top handmade Etsy shop: generous white space, nothing extra — no decorations, no filler objects, no random props, no clutter. Show only the product and the stated text.";
+  const m1 = all[0] || "the main element";
+  const m2 = all[1] || m1;
+  const heading = brief.split(/[—-]/)[0].trim();
+  const hero = HERO_LAYOUTS[heroSeed % HERO_LAYOUTS.length];
+  const keep = "Use the attached clipart images exactly as provided — do not redraw, restyle, recolor or alter them in any way. Only compose the scene around them.";
+  const txt = (main, sub) =>
+    `Render clear, bold, well-spelled text on the image: a headline reading "${main}"${sub ? ` and a sub-line reading "${sub}"` : ""}. Typography clean and legible, colors matching the palette.`;
+
+  const T = {
+    hero: txt(`${heading} Clipart`, `${all.length} PNG Bundle · Instant Digital Download`),
+    included: txt("What's Included", `All ${all.length} PNG Elements`),
+    closeup: txt("Close-Up Details", "Every element hand-finished quality"),
+    variety: txt("Mix & Match Variety", `${all.length} designs, endless combinations`),
+    preview: txt(`${heading} Collection`, "One matching set"),
+    howto: txt("How To Use Your Clipart", "Cards · Gift Tags · Stickers"),
+    perfect: txt("Perfect For", "Planners · Shirts · Mugs · Invitations"),
+    fileinfo: txt("File Details", "PNG Format · 300 DPI · Transparent Background · Instant Digital Download"),
+    license: txt("Commercial & Personal Use", "Digital product — no physical item shipped"),
+    cta: txt("Get Your Bundle Today", "Instant Digital Download ♥"),
+  };
+
+  if (mode === "ref") {
+    return [
+      { name: "Hero image", why: "The search thumbnail — what it is, how many, and that it's digital", attach: "Attach only your 4–5 BEST element PNGs (not the full set — save that for image 2)", text: `${keep} ${hero}. Compose only the attached star elements with breathing room; background tones matching this palette: ${dna}. ${T.hero} ${size}` },
+      { name: "What's included", why: "Every element displayed — builds trust", attach: `Attach all ${all.length} finished element PNGs`, text: `${keep} Display all attached elements together in neat, evenly spaced rows on a plain very light background so buyers can see everything included. ${T.included} ${size}` },
+      { name: "Close-up details", why: "Proves the art quality", attach: "Attach your 3 best element PNGs", text: `${keep} Show the attached elements large and slightly overlapping with soft drop shadows on a clean background so the texture and detail are clearly visible. Background tones matching: ${dna}. ${T.closeup} ${size}` },
+      { name: "Design variety", why: "Shows the range inside one bundle", attach: "Attach 6 varied element PNGs", text: `${keep} Place each attached element in its own soft rounded panel arranged in a 2x3 grid on a subtle background matching this palette: ${dna}. ${T.variety} ${size}` },
+      { name: "Bundle preview", why: "A beautiful styled arrangement", attach: "Attach 6–8 element PNGs", text: `${keep} Compose the attached elements in a clean curated arrangement with gentle overlaps and generous white space; background tones matching: ${dna}. ${T.preview} ${size}` },
+      { name: "How it works", why: "Demonstrates real use", attach: `Attach your "${m1}" PNG`, text: `${keep} Show the attached graphic applied onto a greeting card, a gift tag and a printed sticker arranged on a styled desk with soft natural lighting, props in tones matching: ${dna}. ${T.howto} ${size}` },
+      { name: "Perfect for…", why: "Multi-product mockup — planners, shirts, mugs, invites", attach: `Attach your "${m1}" and "${m2}" PNGs`, text: `${keep} Create a product mockup flat lay: an open planner page, a folded t-shirt, a mug and an invitation card on a neutral styled surface, each decorated with the attached graphics, soft natural lighting, styling tones matching: ${dna}. ${T.perfect} ${size}` },
+      { name: "File information", why: "Tells buyers exactly what they get — and shows the transparent background", attach: `Attach your "${m1}" PNG`, text: `${keep} Clean minimal square design split in two: on one side, the attached element displayed on a classic grey-and-white checkerboard transparency pattern to clearly show the PNG has a transparent background; on the other side, one soft background color from this palette: ${dna}. ${T.fileinfo} The text is large and easy to read. ${size}` },
+      { name: "License info", why: "Answers the usage question up front", attach: "No attachment needed", text: `Minimal elegant square design on a soft wash of this palette: ${dna}. ${T.license} The text is the centerpiece of this image, large and easy to read. ${size}` },
+      { name: "Call to action", why: "The closing image — invites the purchase", attach: `Attach your "${m1}" PNG`, text: `${keep} Center the attached element large with generous space around it; background tones matching: ${dna}, warm inviting composition. ${T.cta} ${size}` },
+    ];
+  }
+
+  return [
+    { name: "Hero image", why: "The search thumbnail — what it is, how many, and that it's digital", text: `Etsy hero listing image for a clipart bundle themed "${brief}": showcase ONLY the 4-5 star elements — ${all.slice(0, 5).join(", ")} — not the full set. ${hero}. ${T.hero} ${dna}, ${size}` },
+    { name: "What's included", why: "Every element displayed — builds trust", text: `Clipart bundle contents sheet: all of the following elements displayed together in neat evenly spaced rows on a plain very light background — ${all.join(", ")} — every element in the identical matching style. ${T.included} ${dna}, ${size}` },
+    { name: "Close-up details", why: "Proves the art quality", text: `Close-up detail composition of three star elements from a clipart bundle: ${heroes}, shown large and slightly overlapping with soft drop shadows on a clean background so the texture and linework are clearly visible. ${T.closeup} ${dna}, ${size}` },
+    { name: "Design variety", why: "Shows the range inside one bundle", text: `Variety showcase: six different elements from the bundle — ${all.slice(0, 6).join(", ")} — each displayed in its own soft rounded panel arranged in a 2x3 grid, subtle background matching the palette. ${T.variety} ${dna}, ${size}` },
+    { name: "Bundle preview", why: "A beautiful styled arrangement", text: `Artistic flat lay arrangement of clipart elements ${all.slice(0, Math.min(8, all.length)).join(", ")} composed in a clean curated arrangement with gentle overlaps and generous white space. ${T.preview} ${dna}, ${size}` },
+    { name: "How it works", why: "Demonstrates real use", text: `Demonstration collage: the element ${m1} shown applied onto a greeting card, a gift tag and a printed sticker arranged on a styled desk, each application rendered exactly in this style: ${dna}, soft natural lighting. ${T.howto} ${size}` },
+    { name: "Perfect for…", why: "Multi-product mockup — planners, shirts, mugs, invites", text: `Product mockup flat lay photograph: an open planner page, a folded t-shirt, a mug and an invitation card arranged on a neutral styled surface, each decorated with elements from the bundle (${heroes}), every graphic rendered exactly in this style: ${dna}, soft natural lighting. ${T.perfect} ${size}` },
+    { name: "File information", why: "Tells buyers exactly what they get — and shows the transparent background", text: `Clean minimal square design split in two: on one side, the element ${m1} displayed on a classic grey-and-white checkerboard transparency pattern to clearly show the PNG has a transparent background; on the other side, one soft background color from the bundle palette. ${T.fileinfo} The text is large and easy to read. ${dna}, ${size}` },
+    { name: "License info", why: "Answers the usage question up front", text: `Minimal elegant square design on a soft wash of the bundle palette. ${T.license} The text is the centerpiece of this image, large and easy to read. ${dna}, ${size}` },
+    { name: "Call to action", why: "The closing image — invites the purchase", text: `Attractive closing image: the most charming element from the bundle, ${m1}, centered and large with generous space around it, warm inviting composition. ${T.cta} ${dna}, ${size}` },
+  ];
+}
+
+function ClipartPromptStudio() {
+  const [clipTypeId, setClipTypeId] = useState(null);
+  const [clipSub, setClipSub] = useState(null);
+  const [brief, setBrief] = useState("");
+  const [character, setCharacter] = useState("");
+  const [styleId, setStyleId] = useState(null);
+  const [paletteId, setPaletteId] = useState(null);
+  const [customPalette, setCustomPalette] = useState("");
+  const [occasion, setOccasion] = useState("Everyday");
+  const [count, setCount] = useState(12);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [result, setResult] = useState(null);
+  const [copiedKey, setCopiedKey] = useState(null);
+  const [tab, setTab] = useState("dna");
+  const [imgMode, setImgMode] = useState("ref");
+  const [heroSeed, setHeroSeed] = useState(0);
+  const [licenseKey, setLicenseKey] = useState(() => { try { return localStorage.getItem("lvs_license") || ""; } catch { return ""; } });
+
+  const style = STYLES.find((s) => s.id === styleId);
+  const clipType = CLIPART_TYPES.find((t) => t.id === clipTypeId);
+  const clipTypeLabel = clipType ? (clipSub ? `${clipType.name} — ${clipSub}` : clipType.name) : "";
+  const palette = PALETTES.find((p) => p.id === paletteId);
+  const paletteDesc = palette && palette.id === "custom" ? customPalette.trim() : palette ? palette.desc : "";
+  const ready = brief.trim() && style && clipType;
+  const dnaStr = result ? result.dna.join(", ") : "";
+
+  const fullPrompt = (el) =>
+    `${el}, ${dnaStr}, isolated on a plain white background for easy background removal, no text, high resolution. Avoid: ${result.negative}`;
+
+  const masterPrompt = result
+    ? `Create a cohesive clipart set of ${result.elements.length} individual elements themed "${brief.trim()}". Elements: ${result.elements.join("; ")}. Every element must share the exact same visual identity: ${dnaStr}. Each element is isolated on a plain white background for easy background removal, evenly sized, no text, high resolution. Avoid: ${result.negative}`
+    : "";
+
+  const copy = async (key, text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedKey(key);
+      setTimeout(() => setCopiedKey(null), 1400);
+    } catch {}
+  };
+
+  const generate = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      try { localStorage.setItem("lvs_license", licenseKey.trim()); } catch {}
+      const response = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          licenseKey: licenseKey.trim(),
+          brief: brief.trim(),
+          character: character.trim(),
+          styleId,
+          count,
+          clipTypeLabel,
+          paletteDesc,
+          occasion,
+        }),
+      });
+      const parsed = await response.json();
+      if (!response.ok) throw new Error(parsed.error || "Generation failed");
+      if (!Array.isArray(parsed.dna) || !Array.isArray(parsed.elements) || !parsed.negative) throw new Error("bad shape");
+      setResult(parsed);
+      setHeroSeed(Math.floor(Math.random() * 6));
+      setTab("dna");
+    } catch (e) {
+      setError(e.message === "Generation failed" || e.message.startsWith("bad") ? "Generation hiccup — tap Generate again." : e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const input = {
+    width: "100%",
+    boxSizing: "border-box",
+    padding: "13px 14px",
+    fontSize: 15,
+    fontFamily: "'Nunito Sans', sans-serif",
+    border: `1.5px solid ${C.line}`,
+    borderRadius: 12,
+    background: C.panel,
+    color: C.ink,
+  };
+
+  return (
+    <div style={{ minHeight: "100vh", background: C.blush, fontFamily: "'Nunito Sans', sans-serif", color: C.ink }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+        input:focus, textarea:focus { outline: 2.5px solid ${C.pink}; outline-offset: 1px; border-color: transparent; }
+        button { cursor: pointer; }
+        @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+      `}</style>
+
+      <header style={{ padding: "26px 20px 8px", textAlign: "center" }}>
+        <div
+          style={{
+            display: "inline-block",
+            fontFamily: "'Baloo 2', sans-serif",
+            fontWeight: 800,
+            fontSize: 27,
+            lineHeight: 1.05,
+            color: C.ink,
+            background: C.panel,
+            border: `3px solid ${C.panel}`,
+            boxShadow: `0 0 0 2px ${C.line}, 0 6px 16px rgba(196,47,123,0.15)`,
+            borderRadius: 18,
+            padding: "12px 22px",
+            transform: "rotate(-1.5deg)",
+          }}
+        >
+          Etsy Listing <span style={{ color: C.pink }}>Visual System</span>
+          <span style={{ color: C.gold }}> ✦</span>
+        </div>
+        <div style={{ fontSize: 14, color: C.inkSoft, marginTop: 12, maxWidth: 440, marginLeft: "auto", marginRight: "auto" }}>
+          One brief in — Product DNA, master clipart prompt, element prompts, a 10-image listing set and your copy. All matching, always.
+        </div>
+      </header>
+
+      <main style={{ maxWidth: 640, margin: "0 auto", padding: "18px 16px 70px" }}>
+        {/* license */}
+        <div style={{ background: C.panel, border: `1.5px solid ${C.line}`, borderRadius: 14, padding: "12px 14px", marginBottom: 22, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+          <span style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 700, fontSize: 14 }}>🔑 License key</span>
+          <input
+            style={{ flex: 1, minWidth: 180, boxSizing: "border-box", padding: "10px 12px", fontSize: 14, fontFamily: "'Nunito Sans', sans-serif", border: `1.5px solid ${C.line}`, borderRadius: 10, background: C.blush }}
+            value={licenseKey}
+            placeholder="Paste the key from your purchase email"
+            onChange={(e) => setLicenseKey(e.target.value)}
+          />
+        </div>
+
+        {/* clipart type */}
+        <Label>1 · What type of clipart?</Label>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 22 }}>
+          {CLIPART_TYPES.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => { setClipTypeId(t.id); setClipSub(null); }}
+              style={{
+                padding: "9px 14px",
+                borderRadius: 999,
+                fontSize: 13.5,
+                fontWeight: 700,
+                fontFamily: "'Nunito Sans', sans-serif",
+                border: `2px solid ${clipTypeId === t.id ? C.pinkDeep : C.line}`,
+                background: clipTypeId === t.id ? C.pink : C.panel,
+                color: clipTypeId === t.id ? "#fff" : C.inkSoft,
+              }}
+            >
+              {t.icon} {t.name}
+            </button>
+          ))}
+        </div>
+        {clipType && clipType.subs.length > 0 && (
+          <div style={{ marginTop: -10, marginBottom: 22 }}>
+            <div style={{ fontSize: 12.5, fontWeight: 700, color: C.inkSoft, margin: "0 0 8px" }}>
+              Which kind of {clipType.name.toLowerCase()}? <span style={{ fontWeight: 400 }}>(optional — refine it)</span>
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+              {clipType.subs.map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setClipSub(clipSub === s ? null : s)}
+                  style={{
+                    padding: "7px 12px",
+                    borderRadius: 999,
+                    fontSize: 12.5,
+                    fontWeight: 700,
+                    fontFamily: "'Nunito Sans', sans-serif",
+                    border: `2px solid ${clipSub === s ? C.gold : C.line}`,
+                    background: clipSub === s ? C.goldSoft : C.panel,
+                    color: clipSub === s ? "#7A5F10" : C.inkSoft,
+                  }}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <Label>2 · Your bundle idea</Label>
+        <div style={{ display: "grid", gap: 12, marginBottom: 12 }}>
+          <input style={input} value={brief} placeholder="e.g. African American women in construction, feminine pink theme" onChange={(e) => setBrief(e.target.value)} />
+          <input style={input} value={character} placeholder="Optional: recurring character (e.g. pink hard hat, gold hoops)" onChange={(e) => setCharacter(e.target.value)} />
+        </div>
+        {clipType && BUNDLE_IDEAS[clipType.id] && (
+          <div style={{ marginBottom: 22 }}>
+            <div style={{ fontSize: 12.5, fontWeight: 700, color: C.inkSoft, margin: "0 0 8px" }}>
+              💡 Need inspiration? Tap an idea <span style={{ fontWeight: 400 }}>(then tweak it if you like)</span>
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+              {BUNDLE_IDEAS[clipType.id].map((idea) => {
+                const active = brief === idea;
+                return (
+                  <button
+                    key={idea}
+                    onClick={() => setBrief(idea)}
+                    style={{
+                      padding: "7px 12px",
+                      borderRadius: 999,
+                      fontSize: 12.5,
+                      fontWeight: 600,
+                      textAlign: "left",
+                      fontFamily: "'Nunito Sans', sans-serif",
+                      border: `2px solid ${active ? C.pinkDeep : C.line}`,
+                      background: active ? C.pink : C.blush,
+                      color: active ? "#fff" : C.inkSoft,
+                    }}
+                  >
+                    {idea}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+        {!clipType && <div style={{ fontSize: 12.5, color: C.inkSoft, marginBottom: 22 }}>Pick a clipart type above to see ready-made bundle ideas.</div>}
+
+        <Label>3 · Pick your style</Label>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 22 }}>
+          {STYLES.map((s, i) => {
+            const active = styleId === s.id;
+            return (
+              <button
+                key={s.id}
+                onClick={() => setStyleId(s.id)}
+                style={{
+                  textAlign: "left",
+                  background: C.panel,
+                  border: `3px solid ${C.panel}`,
+                  boxShadow: active
+                    ? `0 0 0 2.5px ${C.pink}, 0 6px 14px rgba(196,47,123,0.18)`
+                    : `0 0 0 1.5px ${C.line}, 0 3px 8px rgba(36,26,33,0.05)`,
+                  borderRadius: 16,
+                  padding: "12px 13px",
+                  transform: `rotate(${i % 2 === 0 ? -1 : 1}deg)`,
+                  transition: "box-shadow .15s",
+                }}
+              >
+                <span style={{ fontSize: 22 }}>{s.icon}</span>
+                <span style={{ display: "block", fontFamily: "'Baloo 2', sans-serif", fontWeight: 700, fontSize: 15.5, marginTop: 2, color: active ? C.pinkDeep : C.ink }}>{s.name}</span>
+                <span style={{ display: "block", fontSize: 12.5, color: C.inkSoft }}>{s.desc}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        <Label>4 · Colours</Label>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
+          {PALETTES.map((p) => {
+            const active = paletteId === p.id;
+            return (
+              <button
+                key={p.id}
+                onClick={() => setPaletteId(active ? null : p.id)}
+                style={{
+                  textAlign: "left",
+                  background: C.panel,
+                  border: `3px solid ${C.panel}`,
+                  boxShadow: active
+                    ? `0 0 0 2.5px ${C.pink}, 0 6px 14px rgba(196,47,123,0.18)`
+                    : `0 0 0 1.5px ${C.line}, 0 3px 8px rgba(36,26,33,0.05)`,
+                  borderRadius: 16,
+                  padding: "11px 13px",
+                }}
+              >
+                <span style={{ display: "flex", gap: 4, marginBottom: 6 }}>
+                  {p.swatch.length > 0 ? (
+                    p.swatch.map((hex, i) => (
+                      <span key={i} style={{ width: 18, height: 18, borderRadius: 9, background: hex, border: "1.5px solid rgba(36,26,33,0.12)" }} />
+                    ))
+                  ) : (
+                    <span style={{ fontSize: 16 }}>🎨✏️</span>
+                  )}
+                </span>
+                <span style={{ display: "block", fontFamily: "'Baloo 2', sans-serif", fontWeight: 700, fontSize: 14.5, color: active ? C.pinkDeep : C.ink }}>
+                  {p.name}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        {paletteId === "custom" && (
+          <input
+            style={{ ...input, marginBottom: 12 }}
+            value={customPalette}
+            placeholder="Describe your colours, e.g. blush pink, ivory, sage green, gold"
+            onChange={(e) => setCustomPalette(e.target.value)}
+          />
+        )}
+        <div style={{ fontSize: 12.5, color: C.inkSoft, marginBottom: 22 }}>
+          Optional — leave unselected and the DNA will invent a palette to match your theme.
+        </div>
+
+        <Label>5 · Occasion</Label>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 22 }}>
+          {OCCASIONS.map((o) => (
+            <button
+              key={o}
+              onClick={() => setOccasion(o)}
+              style={{
+                padding: "8px 13px",
+                borderRadius: 999,
+                fontSize: 13,
+                fontWeight: 700,
+                fontFamily: "'Nunito Sans', sans-serif",
+                border: `2px solid ${occasion === o ? C.pinkDeep : C.line}`,
+                background: occasion === o ? C.pink : C.panel,
+                color: occasion === o ? "#fff" : C.inkSoft,
+              }}
+            >
+              {o}
+            </button>
+          ))}
+        </div>
+
+        <Label>6 · Bundle size</Label>
+        <div style={{ display: "flex", gap: 8, marginBottom: 26 }}>
+          {SIZES.map((n) => (
+            <button
+              key={n}
+              onClick={() => setCount(n)}
+              style={{
+                flex: 1,
+                padding: "11px 0",
+                borderRadius: 999,
+                fontFamily: "'Baloo 2', sans-serif",
+                fontWeight: 700,
+                fontSize: 15,
+                border: `2px solid ${count === n ? C.pinkDeep : C.line}`,
+                background: count === n ? C.pink : C.panel,
+                color: count === n ? "#fff" : C.inkSoft,
+              }}
+            >
+              {n}
+            </button>
+          ))}
+        </div>
+
+        <button
+          onClick={generate}
+          disabled={!ready || loading}
+          style={{
+            width: "100%",
+            padding: "16px",
+            borderRadius: 16,
+            border: "none",
+            fontFamily: "'Baloo 2', sans-serif",
+            fontWeight: 800,
+            fontSize: 18,
+            color: "#fff",
+            background: ready ? `linear-gradient(120deg, ${C.pink}, ${C.pinkDeep})` : C.line,
+            boxShadow: ready ? "0 8px 20px rgba(196,47,123,0.3)" : "none",
+            opacity: loading ? 0.75 : 1,
+          }}
+        >
+          {loading ? "Building your visual system… ✦" : "Create my listing visual system ✦"}
+        </button>
+        {!ready && (
+          <div style={{ fontSize: 13, color: C.inkSoft, marginTop: 8, textAlign: "center" }}>
+            Pick a clipart type, add your bundle idea, and choose a style to generate.
+          </div>
+        )}
+        {error && <div style={{ color: C.red, fontSize: 14, marginTop: 10, textAlign: "center" }}>{error}</div>}
+
+        {/* ------- RESULTS ------- */}
+        {result && (
+          <div style={{ marginTop: 30 }}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }}>
+              <Tab active={tab === "dna"} onClick={() => setTab("dna")}>DNA</Tab>
+              <Tab active={tab === "prompts"} onClick={() => setTab("prompts")}>Cliparts</Tab>
+              <Tab active={tab === "images"} onClick={() => setTab("images")}>Images</Tab>
+              <Tab active={tab === "listing"} onClick={() => setTab("listing")}>Listing</Tab>
+            </div>
+
+            {/* DNA & MASTER */}
+            {tab === "dna" && (
+              <div>
+                <Sticker rotate={-0.8}>
+                  <StickerHead icon="🧬" title="Product DNA" sub="Inherited by every prompt in this system" />
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+                    {result.dna.map((d, i) => (
+                      <span key={i} style={{ background: C.blush, border: `1.5px solid ${C.line}`, color: C.inkSoft, borderRadius: 999, padding: "6px 12px", fontSize: 12.5, fontWeight: 600 }}>
+                        {d}
+                      </span>
+                    ))}
+                  </div>
+                  <div style={{ marginTop: 10 }}>
+                    <SmallBtn onClick={() => copy("dna", dnaStr)}>{copiedKey === "dna" ? "Copied ✓" : "Copy DNA"}</SmallBtn>
+                  </div>
+                </Sticker>
+
+                <Sticker rotate={0.7}>
+                  <StickerHead icon="⭐" title="Master clipart prompt" sub="Generates the whole set in one go (for generators that support multi-element sheets)" />
+                  <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 12, lineHeight: 1.55, color: C.inkSoft, background: C.blush, borderRadius: 10, padding: 12 }}>
+                    {masterPrompt}
+                  </div>
+                  <div style={{ marginTop: 10 }}>
+                    <SmallBtn onClick={() => copy("master", masterPrompt)}>{copiedKey === "master" ? "Copied ✓" : "Copy master prompt"}</SmallBtn>
+                  </div>
+                </Sticker>
+
+                <Sticker rotate={-0.6}>
+                  <StickerHead icon="🚫" title="Negative prompt" sub="Paste into your generator's negative field (or it's already appended as 'Avoid:')" />
+                  <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 12, lineHeight: 1.55, color: C.inkSoft }}>
+                    {result.negative}
+                  </div>
+                  <div style={{ marginTop: 10 }}>
+                    <SmallBtn onClick={() => copy("neg", result.negative)}>{copiedKey === "neg" ? "Copied ✓" : "Copy negative"}</SmallBtn>
+                  </div>
+                </Sticker>
+              </div>
+            )}
+
+            {/* ELEMENT PROMPTS */}
+            {tab === "prompts" && (
+              <div>
+                <div style={{ display: "flex", justifyContent: "flex-end", margin: "0 0 10px" }}>
+                  <SmallBtn onClick={() => copy("all", result.elements.map((el, i) => `${i + 1}. ${fullPrompt(el)}`).join("\n\n"))}>
+                    {copiedKey === "all" ? "Copied all ✓" : "Copy all prompts"}
+                  </SmallBtn>
+                </div>
+                {result.elements.map((el, i) => (
+                  <Sticker key={i} rotate={i % 2 === 0 ? 0.7 : -0.7}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                      <span style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 700, fontSize: 15, color: C.pinkDeep }}>
+                        {String(i + 1).padStart(2, "0")} · {el}
+                      </span>
+                      <SmallBtn onClick={() => copy("p" + i, fullPrompt(el))}>{copiedKey === "p" + i ? "✓" : "Copy"}</SmallBtn>
+                    </div>
+                    <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 12, lineHeight: 1.5, color: C.inkSoft }}>{fullPrompt(el)}</div>
+                  </Sticker>
+                ))}
+              </div>
+            )}
+
+            {/* 10-IMAGE LISTING SET */}
+            {tab === "images" && (
+              <div>
+                <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+                  <Tab active={imgMode === "ref"} onClick={() => setImgMode("ref")}>📎 Reference-image mode</Tab>
+                  <Tab active={imgMode === "text"} onClick={() => setImgMode("text")}>✍️ Text-only mode</Tab>
+                </div>
+                <div style={{ fontSize: 13, color: C.inkSoft, lineHeight: 1.55, marginBottom: 14, textAlign: "center" }}>
+                  {imgMode === "ref"
+                    ? "Best match: generate your cliparts first, then attach those real PNG files with each prompt below in a generator that accepts reference images. Your listing shows the exact same art as your bundle."
+                    : "Text-only prompts inherit the Product DNA for a matching style — the look will be cohesive, but elements are freshly drawn, not identical to your bundle files."}
+                </div>
+                <div style={{ background: C.goldSoft, borderRadius: 12, padding: "10px 14px", fontSize: 12.5, fontWeight: 700, color: "#7A5F10", textAlign: "center", marginBottom: 12 }}>
+                  ⚠️ Generate each listing image SEPARATELY — one prompt, one image, in order 1 → 10. Never combine them into a single picture.
+                </div>
+                <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 10 }}>
+                  <SmallBtn onClick={() => copy("allimg", listingImagePrompts(result, brief.trim(), imgMode, heroSeed).map((p, i) => `LISTING IMAGE ${i + 1} — ${p.name} (generate as its own separate image)${p.attach ? `\n${p.attach}` : ""}\n${p.text}`).join("\n\n"))}>
+                    {copiedKey === "allimg" ? "Copied all ✓" : "Copy all 10"}
+                  </SmallBtn>
+                </div>
+                {listingImagePrompts(result, brief.trim(), imgMode, heroSeed).map((p, i) => (
+                  <Sticker key={imgMode + i} rotate={i % 2 === 0 ? 0.6 : -0.6}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, marginBottom: 4 }}>
+                      <span>
+                        <span style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 700, fontSize: 15.5, color: C.pinkDeep }}>
+                          {String(i + 1).padStart(2, "0")} · {p.name}
+                        </span>
+                        <span style={{ display: "block", fontSize: 12, color: C.inkSoft, marginTop: 2 }}>{p.why}</span>
+                      </span>
+                      <SmallBtn onClick={() => copy("img" + i, p.text)}>{copiedKey === "img" + i ? "✓" : "Copy"}</SmallBtn>
+                    </div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
+                      <span style={{ display: "inline-block", background: C.goldSoft, color: "#7A5F10", borderRadius: 999, padding: "3px 10px", fontSize: 11.5, fontWeight: 700 }}>
+                        2000×2000 · 1:1
+                      </span>
+                      {p.attach && (
+                        <span style={{ display: "inline-block", background: "#FCE4F1", color: C.pinkDeep, borderRadius: 999, padding: "3px 10px", fontSize: 11.5, fontWeight: 700 }}>
+                          📎 {p.attach}
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 12, lineHeight: 1.5, color: C.inkSoft }}>{p.text}</div>
+                  </Sticker>
+                ))}
+                <div style={{ fontSize: 12.5, color: C.inkSoft, textAlign: "center", marginTop: 14, lineHeight: 1.5 }}>
+                  Every image now carries its own on-image text (headline, counts, digital-download notes). Always check the spelling before publishing — if any text renders wobbly, redo just the text in Canva over the same image.
+                </div>
+              </div>
+            )}
+
+            {/* LISTING COPY */}
+            {tab === "listing" && (
+              <div>
+                <Sticker rotate={-0.6}>
+                  <StickerHead icon="🏷️" title="Title" />
+                  <p style={{ margin: 0, fontSize: 14.5, lineHeight: 1.5 }}>{result.title}</p>
+                  <div style={{ marginTop: 10 }}>
+                    <SmallBtn onClick={() => copy("title", result.title)}>{copiedKey === "title" ? "Copied ✓" : "Copy"}</SmallBtn>
+                  </div>
+                </Sticker>
+                <Sticker rotate={0.6}>
+                  <StickerHead icon="📝" title="Description" />
+                  <p style={{ margin: 0, fontSize: 14.5, lineHeight: 1.6 }}>{result.description}</p>
+                  <div style={{ marginTop: 10 }}>
+                    <SmallBtn onClick={() => copy("desc", result.description)}>{copiedKey === "desc" ? "Copied ✓" : "Copy"}</SmallBtn>
+                  </div>
+                </Sticker>
+                <Sticker rotate={-0.5}>
+                  <StickerHead icon="✨" title="13 tags" />
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+                    {result.tags.map((t, i) => (
+                      <span key={i} style={{ background: C.goldSoft, color: "#7A5F10", borderRadius: 999, padding: "5px 11px", fontSize: 12.5, fontWeight: 600 }}>{t}</span>
+                    ))}
+                  </div>
+                  <div style={{ marginTop: 12 }}>
+                    <SmallBtn onClick={() => copy("tags", result.tags.join(", "))}>{copiedKey === "tags" ? "Copied ✓" : "Copy tags"}</SmallBtn>
+                  </div>
+                </Sticker>
+              </div>
+            )}
+
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}
+
+const PALETTES = [
+  { id: "blushgold", name: "Blush & Gold", swatch: ["#F6C6CF", "#E84C9C", "#C9A227", "#241A21"], desc: "blush pink, hot pink, champagne gold, ivory and soft black" },
+  { id: "pastel", name: "Pastel Rainbow", swatch: ["#FFD6E8", "#D6EFFF", "#FFF3C4", "#DDF5D6"], desc: "soft pastel pink, baby blue, butter yellow, mint and lilac" },
+  { id: "boho", name: "Earthy Boho", swatch: ["#C77E5A", "#D9B48F", "#8A9A5B", "#F1E7DA"], desc: "terracotta, warm sand, sage green, cream and rust" },
+  { id: "bold", name: "Bold & Bright", swatch: ["#FF3E6C", "#FFB800", "#00B8A9", "#5F4BB6"], desc: "hot pink, sunshine yellow, teal, purple and orange" },
+  { id: "jewel", name: "Moody Jewels", swatch: ["#5B2A56", "#1F4E5F", "#7A1F3D", "#C9A227"], desc: "deep plum, emerald, burgundy, navy and antique gold" },
+  { id: "luxe", name: "Black & Gold Luxe", swatch: ["#141414", "#C9A227", "#F2E3B8", "#FFFFFF"], desc: "rich black, metallic gold, champagne and crisp white" },
+  { id: "custom", name: "Custom", swatch: [], desc: "" },
+];
+
+const OCCASIONS = [
+  "Everyday", "Birthday", "Wedding", "Baby Shower", "Valentine's Day",
+  "Mother's Day", "Easter", "Halloween", "Christmas", "Graduation",
+];
+
+/* --- pieces ------------------------------------------------- */
+
+function Label({ children }) {
+  return (
+    <div style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 800, fontSize: 16, color: "#241A21", margin: "0 0 10px" }}>{children}</div>
+  );
+}
+
+function Sticker({ children, rotate = 0 }) {
+  return (
+    <div
+      style={{
+        background: "#FFFFFF",
+        border: "3px solid #FFFFFF",
+        boxShadow: "0 0 0 1.5px #EBD9D6, 0 4px 12px rgba(36,26,33,0.06)",
+        borderRadius: 16,
+        padding: 14,
+        marginBottom: 12,
+        transform: `rotate(${rotate}deg)`,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function StickerHead({ icon, title, sub }) {
+  return (
+    <div style={{ marginBottom: 8 }}>
+      <span style={{ fontFamily: "'Baloo 2', sans-serif", fontWeight: 700, fontSize: 15.5, color: "#241A21" }}>{icon} {title}</span>
+      {sub && <span style={{ display: "block", fontSize: 12, color: "#4A3B44", marginTop: 2 }}>{sub}</span>}
+    </div>
+  );
+}
+
+function SmallBtn({ onClick, children }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        background: "#241A21",
+        color: "#FFD9EC",
+        border: "none",
+        borderRadius: 999,
+        padding: "7px 14px",
+        fontFamily: "'Nunito Sans', sans-serif",
+        fontWeight: 700,
+        fontSize: 12.5,
+        flexShrink: 0,
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
+function Tab({ active, onClick, children }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        flex: "1 1 30%",
+        padding: "11px 4px",
+        borderRadius: 12,
+        fontFamily: "'Baloo 2', sans-serif",
+        fontWeight: 700,
+        fontSize: 13,
+        border: `2px solid ${active ? "#C42F7B" : "#EBD9D6"}`,
+        background: active ? "#E84C9C" : "#FFFFFF",
+        color: active ? "#fff" : "#4A3B44",
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<ClipartPromptStudio />);
+</script>
+</body>
+</html>
