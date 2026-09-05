@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Etsy Listing Visual System — a whole matching clipart listing in 60 seconds</title>
+<meta name="description" content="Pick your clipart type, style and colours. Get matching clipart prompts, all 10 Etsy listing images, and your title, description and tags. Everything matches, every time." />
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito+Sans:wght@400;600;700&display=swap');
+  :root{
+    --ink:#241A21; --inkSoft:#4A3B44; --blush:#FBF2F0; --panel:#fff;
+    --pink:#E84C9C; --pinkDeep:#C42F7B; --gold:#C9A227; --goldSoft:#F2E3B8; --line:#EBD9D6;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--blush);color:var(--ink);font-family:'Nunito Sans',sans-serif;line-height:1.6}
+  .wrap{max-width:960px;margin:0 auto;padding:0 20px}
+  h1,h2,h3{font-family:'Baloo 2',sans-serif;line-height:1.15;margin:0 0 14px}
+  h1{font-size:clamp(30px,5.5vw,52px);font-weight:800}
+  h2{font-size:clamp(24px,3.5vw,34px);font-weight:800;text-align:center;margin-bottom:8px}
+  .sub{text-align:center;color:var(--inkSoft);max-width:620px;margin:0 auto 34px}
+  section{padding:56px 0}
+  .btn{display:inline-block;background:linear-gradient(120deg,var(--pink),var(--pinkDeep));color:#fff;
+    text-decoration:none;font-family:'Baloo 2',sans-serif;font-weight:800;font-size:19px;
+    padding:16px 34px;border-radius:16px;box-shadow:0 8px 22px rgba(196,47,123,.32)}
+  .btn.ghost{background:#fff;color:var(--ink);border:2px solid var(--line);box-shadow:none;font-size:17px}
+  .card{background:var(--panel);border:3px solid #fff;box-shadow:0 0 0 1.5px var(--line),0 4px 14px rgba(36,26,33,.06);
+    border-radius:18px;padding:22px}
+  .grid{display:grid;gap:16px}
+  @media(min-width:720px){.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}}
+  .tag{display:inline-block;background:var(--goldSoft);color:#7A5F10;border-radius:999px;padding:6px 14px;
+    font-weight:700;font-size:13px;margin-bottom:18px}
+  .hero{text-align:center;padding:64px 0 42px}
+  .hero p.lead{font-size:19px;color:var(--inkSoft);max-width:620px;margin:0 auto 28px}
+  .note{font-size:14px;color:var(--inkSoft);margin-top:14px}
+  .step{display:flex;gap:14px;align-items:flex-start}
+  .num{flex:0 0 auto;width:38px;height:38px;border-radius:19px;background:var(--pink);color:#fff;
+    font-family:'Baloo 2',sans-serif;font-weight:800;display:flex;align-items:center;justify-content:center}
+  .price{text-align:center}
+  .price .amount{font-family:'Baloo 2',sans-serif;font-weight:800;font-size:52px;color:var(--pinkDeep);line-height:1}
+  .strike{color:var(--inkSoft);text-decoration:line-through;font-size:18px}
+  ul.check{list-style:none;padding:0;margin:0 0 22px;text-align:left;display:inline-block}
+  ul.check li{padding-left:28px;position:relative;margin-bottom:9px}
+  ul.check li:before{content:"✓";position:absolute;left:0;color:var(--pinkDeep);font-weight:800}
+  .faq h3{font-size:17px;margin-bottom:4px}
+  .faq p{margin:0 0 18px;color:var(--inkSoft)}
+  footer{background:var(--ink);color:#C9BCC4;text-align:center;padding:30px 20px;font-size:14px}
+  .demo{background:#fff;border:3px solid #fff;box-shadow:0 0 0 1.5px var(--line);border-radius:18px;
+    aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;color:var(--inkSoft);
+    font-weight:700;text-align:center;padding:20px}
+
+  /* watercolour decor */
+  .deco{position:absolute;pointer-events:none;z-index:0}
+  section, .hero{position:relative;z-index:1}
+  .hero-art{max-width:520px;margin:0 auto 26px;display:block}
+  .showcase{display:grid;gap:14px;grid-template-columns:repeat(2,1fr)}
+  @media(min-width:720px){.showcase{grid-template-columns:repeat(4,1fr)}}
+  .slot{background:#fff;border:3px solid #fff;box-shadow:0 0 0 1.5px var(--line),0 4px 12px rgba(36,26,33,.06);
+    border-radius:16px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;overflow:hidden;
+    color:var(--inkSoft);font-size:12.5px;font-weight:700;text-align:center;padding:10px}
+  .slot img{width:100%;height:100%;object-fit:cover;display:block}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero wrap">
+  <span class="tag">✦ For clipart & PNG bundle sellers</span>
+
+  <svg class="hero-art" viewBox="0 0 520 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs>
+      <radialGradient id="w1" cx="50%" cy="50%"><stop offset="0%" stop-color="#F6C6CF" stop-opacity=".95"/><stop offset="70%" stop-color="#F6C6CF" stop-opacity=".35"/><stop offset="100%" stop-color="#F6C6CF" stop-opacity="0"/></radialGradient>
+      <radialGradient id="w2" cx="50%" cy="50%"><stop offset="0%" stop-color="#E84C9C" stop-opacity=".55"/><stop offset="70%" stop-color="#E84C9C" stop-opacity=".18"/><stop offset="100%" stop-color="#E84C9C" stop-opacity="0"/></radialGradient>
+      <radialGradient id="w3" cx="50%" cy="50%"><stop offset="0%" stop-color="#C9A227" stop-opacity=".5"/><stop offset="70%" stop-color="#C9A227" stop-opacity=".16"/><stop offset="100%" stop-color="#C9A227" stop-opacity="0"/></radialGradient>
+      <radialGradient id="w4" cx="50%" cy="50%"><stop offset="0%" stop-color="#D9B4C4" stop-opacity=".6"/><stop offset="100%" stop-color="#D9B4C4" stop-opacity="0"/></radialGradient>
+    </defs>
+    <ellipse cx="120" cy="100" rx="105" ry="78" fill="url(#w1)"/>
+    <ellipse cx="255" cy="88" rx="120" ry="70" fill="url(#w2)"/>
+    <ellipse cx="392" cy="105" rx="100" ry="72" fill="url(#w3)"/>
+    <ellipse cx="185" cy="130" rx="80" ry="50" fill="url(#w4)"/>
+    <g fill="none" stroke="#C42F7B" stroke-width="1.6" stroke-linecap="round" opacity=".75">
+      <path d="M96 118c0-16 11-27 24-27s24 11 24 27"/>
+      <path d="M92 118h56" stroke-width="2.2"/>
+      <path d="M104 96c4-9 12-14 16-14s12 5 16 14"/>
+    </g>
+    <g fill="none" stroke="#C42F7B" stroke-width="1.6" stroke-linecap="round" opacity=".75">
+      <path d="M240 78c8 0 14 6 14 14 0 12-14 22-14 30 0-8-14-18-14-30 0-8 6-14 14-14z"/>
+      <path d="M240 122v14"/>
+    </g>
+    <g fill="none" stroke="#8A6A12" stroke-width="1.6" stroke-linecap="round" opacity=".7">
+      <circle cx="388" cy="98" r="16"/>
+      <path d="M388 82v-10M388 114v10M372 98h-10M404 98h10"/>
+    </g>
+    <g fill="#C9A227" opacity=".9">
+      <path d="M60 54l3 8 8 3-8 3-3 8-3-8-8-3 8-3z"/>
+      <path d="M455 48l2.5 6.5L464 57l-6.5 2.5L455 66l-2.5-6.5L446 57l6.5-2.5z"/>
+      <path d="M312 140l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/>
+    </g>
+  </svg>
+  <h1>A whole matching clipart&nbsp;listing<br>in about 60 seconds</h1>
+  <p class="lead">Pick your clipart type, style and colours. Get your clipart prompts, all 10 Etsy listing images and your title, description and tags — all locked to one Product DNA so everything matches.</p>
+  <a class="btn" href="#pricing">Get instant access →</a>
+  <div class="note">One-time payment · Instant access · No subscription</div>
+</section>
+
+<!-- PROBLEM -->
+<section class="wrap">
+  <h2>Why AI clipart bundles look amateur</h2>
+  <p class="sub">You generate 16 elements and they don't match. Different pinks. Different line weights. Then the listing images look like a different shop made them. Buyers notice — and scroll past.</p>
+  <div class="grid g2">
+    <div class="card">
+      <h3>😩 The usual way</h3>
+      <p>Guess at prompts · 16 mismatched elements · start over · build listing images from scratch · write the title and tags yourself · hours gone.</p>
+    </div>
+    <div class="card">
+      <h3>✨ With the Visual System</h3>
+      <p>One brief in. A Product DNA locks the subjects, style, palette, texture and mood — then every prompt inherits it. Cohesive bundle, cohesive listing, done.</p>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT YOU GET -->
+<section class="wrap">
+  <h2>What you get, every single time</h2>
+  <p class="sub">Four tabs of finished, copy-ready output.</p>
+  <div class="grid g2">
+    <div class="card"><h3>🧬 Product DNA + master prompt</h3><p>Six locked traits — subjects, art style, named colour palette, texture, linework, mood — plus a negative prompt so nothing drifts.</p></div>
+    <div class="card"><h3>🎨 Your clipart prompts</h3><p>8, 12, 16 or 20 elements, each written for a clean transparent-ready PNG, all inheriting the DNA.</p></div>
+    <div class="card"><h3>🖼️ All 10 listing images</h3><p>Hero, what's included, close-ups, variety, preview, how it works, perfect-for mockups, file details, license and call to action — each with its own on-image text, sized 2000×2000.</p></div>
+    <div class="card"><h3>🏷️ Listing copy</h3><p>Keyword-rich title, ready description and 13 Etsy tags. Copy, paste, publish.</p></div>
+  </div>
+</section>
+
+
+<!-- SHOWCASE -->
+<section class="wrap">
+  <h2>Made with the system</h2>
+  <p class="sub">Real bundles, real listings — every element matching.</p>
+  <div class="showcase">
+    <div class="slot"><!-- <img src="sample1.png" alt=""> -->Drop sample 1 here</div>
+    <div class="slot"><!-- <img src="sample2.png" alt=""> -->Drop sample 2 here</div>
+    <div class="slot"><!-- <img src="sample3.png" alt=""> -->Drop sample 3 here</div>
+    <div class="slot"><!-- <img src="sample4.png" alt=""> -->Drop sample 4 here</div>
+  </div>
+  <p class="note" style="text-align:center">Tip: use four elements from one bundle so the row itself proves the consistency.</p>
+</section>
+
+<!-- DEMO -->
+<section class="wrap">
+  <h2>See it work</h2>
+  <p class="sub">One brief in — a full matching listing out.</p>
+  <div class="demo">▶ Add your 60-second demo video here<br><span style="font-weight:400;font-size:14px">(screen recording of a full generation)</span></div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="wrap">
+  <h2>How it works</h2>
+  <p class="sub">Four taps. Typing optional.</p>
+  <div class="grid g3">
+    <div class="card step"><span class="num">1</span><div><h3>Choose</h3><p>Clipart type, bundle idea, art style, colours, occasion and size.</p></div></div>
+    <div class="card step"><span class="num">2</span><div><h3>Generate</h3><p>Your DNA, prompts, 10 listing images and listing copy appear in seconds.</p></div></div>
+    <div class="card step"><span class="num">3</span><div><h3>Create & list</h3><p>Run the prompts in your AI image tool, then paste the copy into Etsy.</p></div></div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="wrap" id="pricing">
+  <svg class="deco" style="top:-40px;right:-60px;width:280px;opacity:.5" viewBox="0 0 200 200" aria-hidden="true"><ellipse cx="100" cy="100" rx="95" ry="80" fill="url(#w1)"/></svg>
+  <h2>Founders price</h2>
+  <p class="sub">First 20 buyers only — then it goes up.</p>
+  <div class="card price">
+    <span class="tag">🔥 Limited launch offer</span>
+    <div class="amount">$29</div>
+    <div class="strike">$49</div>
+    <p style="margin:10px 0 20px;color:var(--inkSoft)">One-time payment · lifetime access · all future updates</p>
+    <ul class="check">
+      <li>Unlimited bundle generations</li>
+      <li>All clipart types, styles, palettes and occasions</li>
+      <li>Product DNA + negative prompts</li>
+      <li>All 10 listing image prompts with on-image text</li>
+      <li>Titles, descriptions and 13 tags</li>
+      <li>Free updates as new features land</li>
+    </ul>
+    <div><a class="btn" href="#REPLACE-WITH-YOUR-CHECKOUT-LINK">Buy now — instant access</a></div>
+    <div class="note">You'll get your license key by email straight after checkout.</div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="wrap faq">
+  <h2>Honest answers</h2>
+  <p class="sub">No surprises after you buy.</p>
+  <div class="grid g2">
+    <div class="card">
+      <h3>Does it create the images for me?</h3>
+      <p>No — it creates the complete professional prompt system. You render the images in your own AI image tool (ChatGPT, Midjourney, Gemini and similar all work).</p>
+      <h3>Do I need design skills?</h3>
+      <p>None. Pick from the menus and tap generate. A ready-made bundle idea list is built in if you're stuck.</p>
+    </div>
+    <div class="card">
+      <h3>Can I sell what I make?</h3>
+      <p>Yes — the bundles you create are yours to sell. Just check your image tool's own commercial terms.</p>
+      <h3>Is it a subscription?</h3>
+      <p>No. Pay once, use it forever, keyed to your license.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="wrap" style="text-align:center">
+  <h2>Your next bundle could be listed tonight</h2>
+  <p class="sub">Stop staring at a blank prompt box.</p>
+  <a class="btn" href="#REPLACE-WITH-YOUR-CHECKOUT-LINK">Get instant access — $29</a>
+</section>
+
+<footer>
+  Etsy Listing Visual System · Not affiliated with or endorsed by Etsy, Inc.<br>
+  Questions? <a href="mailto:YOUR@EMAIL.COM" style="color:#FFD9EC">YOUR@EMAIL.COM</a>
+</footer>
+
+</body>
+</html>
