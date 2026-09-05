@@ -287,7 +287,6 @@ USE
     : "";
 
   const sendToEtsy = async () => {
-    if (false) {
     setSendState("sending");
     try {
       const res = await fetch((serverUrl.trim().replace(/\/+$/, "") || "/api") + "/draft", {
