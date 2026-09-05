@@ -71,14 +71,23 @@ Respond with ONLY a valid JSON object, no markdown fences, no commentary:
       },
       body: JSON.stringify({
         model: process.env.ANTHROPIC_MODEL || "claude-sonnet-5",
-        max_tokens: 1500,
+        max_tokens: 4000,
         messages: [{ role: "user", content: prompt }],
       }),
     });
     const data = await ai.json();
     if (!ai.ok) throw new Error(data.error && data.error.message ? data.error.message : "AI request failed");
     const text = (data.content || []).map((b) => (b.type === "text" ? b.text : "")).join("\n");
-    const parsed = JSON.parse(text.replace(/```json|```/g, "").trim());
+    let clean = text.replace(/```json|```/g, "").trim();
+    const first = clean.indexOf("{");
+    const last = clean.lastIndexOf("}");
+    if (first !== -1 && last > first) clean = clean.slice(first, last + 1);
+    let parsed;
+    try {
+      parsed = JSON.parse(clean);
+    } catch (err) {
+      throw new Error("The AI response came back incomplete — please tap Generate again.");
+    }
     if (!Array.isArray(parsed.dna) || !Array.isArray(parsed.elements) || !parsed.negative) throw new Error("Bad AI response shape — try again");
     res.end(JSON.stringify(parsed));
   } catch (e) {
