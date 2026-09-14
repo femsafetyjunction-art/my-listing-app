@@ -1,8 +1,30 @@
 // The brain: builds the expert prompt server-side (protects your prompt IP),
-// checks the customer's license, calls the Anthropic API on YOUR key,
-// and returns the parsed bundle system.
-// Env needed: ANTHROPIC_API_KEY. Optional: ANTHROPIC_MODEL, SKIP_LICENSE=true (testing).
+// checks the customer's license, enforces a generation cap per customer
+// (reset by the webhook on each successful renewal payment — see
+// api/webhook/lemonsqueezy.js), calls the Anthropic API on YOUR key, and
+// returns the parsed bundle system.
+// Env needed: ANTHROPIC_API_KEY, KV_REST_API_URL, KV_REST_API_TOKEN
+//   (the last two are added automatically when you connect a Vercel KV
+//   store to this project).
+// Optional: ANTHROPIC_MODEL, SKIP_LICENSE=true (testing),
+//   GENERATION_LIMIT (default 20 — change anytime in Vercel env vars).
 const { cors } = require("./_etsy");
+const { kv } = require("@vercel/kv");
+
+const GENERATION_LIMIT = parseInt(process.env.GENERATION_LIMIT, 10) || 20;
+
+function usageKey(customerId) {
+  return `usage:${customerId}`;
+}
+
+async function getUsage(customerId) {
+  const count = await kv.get(usageKey(customerId));
+  return count ? parseInt(count, 10) : 0;
+}
+
+async function incrementUsage(customerId) {
+  return kv.incr(usageKey(customerId));
+}
 
 const STYLE_SEEDS = {
   watercolor: ["Watercolor Whimsy", "soft watercolor illustration with delicate paint washes, gentle color bleeds and hand-painted texture"],
@@ -16,15 +38,16 @@ const STYLE_SEEDS = {
 };
 
 async function checkLicense(key) {
-  if (process.env.SKIP_LICENSE === "true") return true;
-  if (!key) return false;
+  if (process.env.SKIP_LICENSE === "true") return { valid: true, customerId: "test-mode" };
+  if (!key) return { valid: false, customerId: null };
   const res = await fetch("https://api.lemonsqueezy.com/v1/licenses/validate", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json" },
     body: new URLSearchParams({ license_key: key }).toString(),
   });
   const data = await res.json();
-  return !!data.valid;
+  const customerId = data.meta && data.meta.customer_id ? String(data.meta.customer_id) : key;
+  return { valid: !!data.valid, customerId };
 }
 
 module.exports = async (req, res) => {
@@ -35,9 +58,15 @@ module.exports = async (req, res) => {
   try {
     const { licenseKey, brief, character, styleId, count, clipTypeLabel, paletteDesc, occasion } = req.body || {};
     if (!brief || !styleId) throw new Error("Missing bundle idea or style");
-    if (!(await checkLicense(licenseKey))) {
+    const license = await checkLicense(licenseKey);
+    if (!license.valid) {
       res.statusCode = 402;
       return res.end(JSON.stringify({ error: "License key missing or invalid. Paste the key from your purchase email." }));
+    }
+    const usedSoFar = await getUsage(license.customerId);
+    if (usedSoFar >= GENERATION_LIMIT) {
+      res.statusCode = 429;
+      return res.end(JSON.stringify({ error: `You've used all ${GENERATION_LIMIT} generations included this billing period. Your limit resets when your subscription renews.` }));
     }
     const [styleName, styleSeed] = STYLE_SEEDS[styleId] || STYLE_SEEDS.watercolor;
     const n = Math.min(Math.max(parseInt(count) || 12, 4), 20);
@@ -89,6 +118,8 @@ Respond with ONLY a valid JSON object, no markdown fences, no commentary:
       throw new Error("The AI response came back incomplete — please tap Generate again.");
     }
     if (!Array.isArray(parsed.dna) || !Array.isArray(parsed.elements) || !parsed.negative) throw new Error("Bad AI response shape — try again");
+    const newCount = await incrementUsage(license.customerId);
+    parsed.usage = { used: newCount || usedSoFar + 1, limit: GENERATION_LIMIT };
     res.end(JSON.stringify(parsed));
   } catch (e) {
     res.statusCode = res.statusCode === 402 ? 402 : 500;
